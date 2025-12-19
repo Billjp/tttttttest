@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faru Smart Glasses - FaruzanAI Trial</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Noto Sans JP (日本語用) を追加 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=VT323&family=Dancing+Script:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Babel (JSX to JS compiler) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Custom Tailwind Configuration for Animations -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        // 日本語フォント Noto Sans JP を最優先に設定
+                        sans: ['"Noto Sans JP"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+                        mono: ['"VT323"', 'monospace'],
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                        'float-gentle': 'float-gentle 6s ease-in-out infinite',
+                        'float-fusion': 'float-fusion 6s ease-in-out infinite',
+                        'shadow-pulse': 'shadow-pulse 6s ease-in-out infinite',
+                        'marquee': 'marquee 40s linear infinite',
+                        'marquee-reverse': 'marquee-reverse 40s linear infinite',
+                        'slide-up-fade': 'slide-up-fade 1s ease-out 0.5s forwards',
+                        'equalizer': 'equalizer 1s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'scan': 'scan 2s linear infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        'float-gentle': {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        'float-fusion': {
+                            '0%, 100%': { transform: 'translateY(0px) scale(1)' },
+                            '50%': { transform: 'translateY(-15px) scale(1.1)' },
+                        },
+                        'shadow-pulse': {
+                            '0%, 100%': { opacity: '0.3', transform: 'translateX(-50%) scaleX(0.8)' },
+                            '50%': { opacity: '0.1', transform: 'translateX(-50%) scaleX(0.6)' },
+                        },
+                        marquee: {
+                            '0%': { transform: 'translateX(0)' },
+                            '100%': { transform: 'translateX(-50%)' },
+                        },
+                        'marquee-reverse': {
+                            '0%': { transform: 'translateX(-50%)' },
+                            '100%': { transform: 'translateX(0)' },
+                        },
+                        'slide-up-fade': {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        equalizer: {
+                            '0%, 100%': { transform: 'scaleY(1)' },
+                            '50%': { transform: 'scaleY(0.3)' },
+                        },
+                        scan: {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(100%)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .float-on-hover:hover {
+            animation: float-gentle 6s ease-in-out infinite;
+        }
+
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+
+        .animation-delay-4000 {
+            animation-delay: 4s;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Scrollbar for chat */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="bg-[#f5f5f7]">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- Icons ---
+        const IconBase = ({ children, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {children}
+            </svg>
+        );
+
+        const Cpu = ({ className }) => <IconBase className={className}><rect x="4" y="4" width="16" height="16" rx="2" ry="2" /><rect x="9" y="9" width="6" height="6" /><line x1="9" y1="1" x2="9" y2="4" /><line x1="15" y1="1" x2="15" y2="4" /><line x1="9" y1="20" x2="9" y2="23" /><line x1="15" y1="20" x2="15" y2="23" /><line x1="20" y1="9" x2="23" y2="9" /><line x1="20" y1="14" x2="23" y2="14" /><line x1="1" y1="9" x2="4" y2="9" /><line x1="1" y1="14" x2="4" y2="14" /></IconBase>;
+        const Zap = ({ className }) => <IconBase className={className}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></IconBase>;
+        const Wifi = ({ className }) => <IconBase className={className}><path d="M5 12.55a11 11 0 0 1 14.08 0" /><path d="M1.42 9a16 16 0 0 1 21.16 0" /><path d="M8.53 16.11a6 6 0 0 1 6.95 0" /><line x1="12" y1="20" x2="12.01" y2="20" /></IconBase>;
+        const Aperture = ({ className }) => <IconBase className={className}><circle cx="12" cy="12" r="10" /><line x1="14.31" y1="8" x2="20.05" y2="17.94" /><line x1="9.69" y1="8" x2="21.17" y2="8" /><line x1="7.38" y1="12" x2="13.12" y2="2.06" /><line x1="9.69" y1="16" x2="3.95" y2="6.06" /><line x1="14.31" y1="16" x2="2.83" y2="16" /><line x1="16.62" y1="12" x2="10.88" y2="21.94" /></IconBase>;
+        const Music = ({ className }) => <IconBase className={className}><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></IconBase>;
+        const Maximize = ({ className }) => <IconBase className={className}><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" /></IconBase>;
+        const Battery = ({ className }) => <IconBase className={className}><rect x="1" y="6" width="18" height="12" rx="2" ry="2" /><line x1="23" y1="13" x2="23" y2="11" /></IconBase>;
+        const Send = ({ className }) => <IconBase className={className}><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></IconBase>;
+        const Sparkles = ({ className }) => <IconBase className={className}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /></IconBase>;
+        const Loader = ({ className }) => <IconBase className={className}><path d="M21 12a9 9 0 1 1-6.219-8.56" /></IconBase>;
+
+        const Instagram = ({ className }) => <IconBase className={className}><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></IconBase>;
+        const XIcon = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className={className}>
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+        );
+
+        // --- Main App Component ---
+        const App = () => {
+            const [scrolled, setScrolled] = useState(false);
+            const [visibleSections, setVisibleSections] = useState(new Set());
+
+            // AI Chat State
+            const [chatInput, setChatInput] = useState("");
+            // 初期メッセージを修正（一般的なAIアシスタント口調）
+            const [chatResponse, setChatResponse] = useState("これは1950年代のミッドセンチュリー建築ですね。特徴的なのは大きな窓と、自然と調和した水平方向のデザインです。");
+            const [isAiLoading, setIsAiLoading] = useState(false);
+            const [userApiKey, setUserApiKey] = useState(""); // User inputted API key (optional fallback)
+            const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+
+            useEffect(() => {
+                const handleScroll = () => setScrolled(window.scrollY > 50);
+                window.addEventListener('scroll', handleScroll);
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            setVisibleSections(prev => {
+                                const newSet = new Set(prev);
+                                newSet.add(entry.target.id);
+                                return newSet;
+                            });
+                        }
+                    });
+                }, { threshold: 0.1 });
+
+                document.querySelectorAll('section').forEach(section => observer.observe(section));
+
+                return () => {
+                    window.removeEventListener('scroll', handleScroll);
+                    observer.disconnect();
+                };
+            }, []);
+
+            const scrollToTop = (e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            // Gemini API Call
+            const handleChatSubmit = async (e) => {
+                e.preventDefault();
+                if (!chatInput.trim() || isAiLoading) return;
+
+                setIsAiLoading(true);
+                const originalInput = chatInput;
+                setChatInput(""); // Clear input immediately
+
+                // NOTE: In the preview environment, the API key is injected automatically.
+                // If you download this file, you might need to set your own key below or use the input field provided in the UI.
+                const apiKey = userApiKey || "";
+
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: originalInput }] }],
+                            system_instruction: {
+                                // システムプロンプトを修正（知的で洗練されたAI）
+                                parts: [{ text: "あなたは『FaruzanAI』という名の、Faruスマートグラスに搭載された高度なAIアシスタントです。知的で落ち着いたトーン（『です・ます』調）で話します。ユーザーの視界にあるものや質問に対して、的確で洗練された情報を提供するパートナーとして振る舞ってください。" }]
+                            }
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.error) {
+                        // Check specifically for API Key errors to show the input field
+                        if (data.error.code === 403 || data.error.status === 'INVALID_ARGUMENT') {
+                            setChatResponse("アクセス権限がありません。APIキーを確認してください。（右下の設定から入力できます）");
+                            setShowApiKeyInput(true);
+                        } else {
+                            setChatResponse(`エラーが発生しました。 (${data.error.message})`);
+                        }
+                    } else {
+                        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (text) {
+                            setChatResponse(text);
+                        } else {
+                            setChatResponse("すみません、よく聞き取れませんでした。もう一度お願いします。");
+                        }
+                    }
+                } catch (error) {
+                    console.error("AI Error:", error);
+                    setChatResponse("通信エラーが発生しました。ネットワーク接続を確認してください。");
+                } finally {
+                    setIsAiLoading(false);
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-[#f5f5f7] text-zinc-900 font-sans selection:bg-black selection:text-white overflow-x-hidden">
+
+                    {/* Navbar */}
+                    <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-sm py-4' : 'bg-transparent py-6'}`}>
+                        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+                            <a href="#" onClick={scrollToTop} className="text-4xl font-bold tracking-tight flex items-center gap-2 hover:opacity-80 transition-opacity" style={{ fontFamily: '"Dancing Script", cursive' }}>
+                                <div className="w-2 h-2 bg-black rounded-full mb-1"></div>
+                                Faru
+                            </a>
+                            <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-500">
+                                <a href="#ai" className="hover:text-black transition-colors">FaruzanAI</a>
+                                <a href="#features" className="hover:text-black transition-colors">Features</a>
+                                <a href="#gallery" className="hover:text-black transition-colors">Gallery</a>
+                                <a href="#specs" className="hover:text-black transition-colors">Specs</a>
+                            </div>
+                            <button className="bg-black/90 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-black transition-all hover:scale-105 active:scale-95 shadow-lg shadow-black/10 backdrop-blur-sm">
+                                Pre-order
+                            </button>
+                        </div>
+                    </nav>
+
+                    {/* Hero Section */}
+                    <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-20">
+                        <div className="absolute inset-0 z-0 overflow-hidden">
+                            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-200/30 rounded-full blur-[80px] opacity-60 mix-blend-multiply animate-blob"></div>
+                            <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-purple-200/30 rounded-full blur-[80px] opacity-60 mix-blend-multiply animate-blob animation-delay-2000"></div>
+                            <div className="absolute -bottom-32 left-1/3 w-[600px] h-[600px] bg-pink-100/40 rounded-full blur-[100px] opacity-50 mix-blend-multiply animate-blob animation-delay-4000"></div>
+                        </div>
+
+                        <div className="z-10 w-full max-w-7xl px-6 flex flex-col items-center">
+                            <div className="relative w-full max-w-full md:max-w-[85vw] aspect-[16/9] md:aspect-[2/1] flex items-center justify-center mb-12 mt-4">
+                                <div className="w-full h-full relative animate-float-fusion z-10">
+                                    <img
+                                        src="./image_3bc6a4.png"
+                                        alt="Faru Smart Glasses"
+                                        className="w-full h-full object-contain drop-shadow-2xl filter contrast-110 scale-125 md:scale-150"
+                                    />
+                                </div>
+                                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-3/4 h-6 bg-black/20 blur-2xl rounded-full scale-x-75 animate-shadow-pulse"></div>
+                            </div>
+
+                            <div className="text-center space-y-6 z-20 max-w-3xl mx-auto">
+                                <h1 className="text-7xl md:text-9xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-black to-black/60 drop-shadow-sm pb-2" style={{ fontFamily: '"Dancing Script", cursive' }}>
+                                    Faru
+                                </h1>
+                                <div className="relative inline-block">
+                                    <div className="absolute -inset-4 bg-white/30 blur-xl rounded-full"></div>
+                                    <p className="relative text-zinc-600 text-lg md:text-2xl font-light tracking-wide max-w-lg mx-auto leading-relaxed">
+                                        見ているもの、その先へ。<br />
+                                        最先端の知性が、あなたの視界に溶け込む。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Intro Lifestyle */}
+                    <section id="intro" className={`py-24 px-6 transition-all duration-1000 ${visibleSections.has('intro') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                        <div className="max-w-7xl mx-auto">
+                            <div className="rounded-[2.5rem] overflow-hidden aspect-video relative group shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-4 border-white/20">
+                                <img
+                                    src="./名称未設定のデザイン (10).png"
+                                    alt="Lifestyle usage"
+                                    className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-1000 scale-100 group-hover:scale-105"
+                                />
+
+                                <div className="absolute bottom-8 left-8 right-8 md:left-12 md:bottom-12 md:w-auto md:right-auto">
+                                    <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 md:p-10 rounded-3xl shadow-lg max-w-xl text-white">
+                                        <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight drop-shadow-md">Everyday, Elevated.</h2>
+                                        <p className="text-lg text-white/90 leading-relaxed font-medium drop-shadow-sm">
+                                            通勤、仕事、そして冒険。Faruはあなたの生活スタイルにシームレスに統合され、
+                                            必要な情報を必要な瞬間にだけ表示します。
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* FaruzanAI Section (Interactive) */}
+                    <section id="ai" className="py-24 px-6 bg-[#000000] text-white overflow-hidden relative">
+                        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-green-500/20 to-emerald-900/10 rounded-full blur-[120px] -translate-y-1/3 translate-x-1/3 opacity-60"></div>
+                        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-blue-600/20 to-indigo-900/10 rounded-full blur-[120px] translate-y-1/3 -translate-x-1/3 opacity-60"></div>
+
+                        <div className="max-w-7xl mx-auto relative z-10">
+                            <div className="flex flex-col md:flex-row items-center gap-12 md:gap-24">
+                                <div className="flex-1 space-y-10">
+                                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 text-sm font-medium backdrop-blur-md shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                                        <span className="tracking-wide text-green-100 flex items-center gap-2">
+                                            <Sparkles className="w-4 h-4 text-green-400" />
+                                            FaruzanAI Integrated <span className="bg-green-500 text-black text-[10px] px-1.5 py-0.5 rounded font-bold uppercase">Trial</span>
+                                        </span>
+                                    </div>
+
+                                    {/* 文言を修正 */}
+                                    <h2 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1]">
+                                        Experience FaruzanAI,<br />
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-200 via-emerald-200 to-blue-200 drop-shadow-[0_0_30px_rgba(167,243,208,0.3)]">Your Vision Partner.</span>
+                                    </h2>
+
+                                    <div className="space-y-6 text-xl text-white/70 max-w-lg font-light leading-relaxed">
+                                        <p>ただ <span className="font-semibold text-white">"Hey Faru"</span> と言うだけ。</p>
+                                        <p>右のウィンドウで実際に試してみましょう。<br />あなたの疑問に、AIが即座にお答えします。</p>
+                                    </div>
+
+                                    {/* Settings toggle for API Key (Visible only if needed) */}
+                                    <div className="pt-4">
+                                        <button
+                                            onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+                                            className="text-xs text-zinc-500 hover:text-zinc-300 underline decoration-zinc-700"
+                                        >
+                                            {showApiKeyInput ? "Hide Developer Settings" : "Developer Settings (API Key)"}
+                                        </button>
+                                        {showApiKeyInput && (
+                                            <div className="mt-2">
+                                                <input
+                                                    type="password"
+                                                    placeholder="Enter your Gemini API Key here..."
+                                                    value={userApiKey}
+                                                    onChange={(e) => setUserApiKey(e.target.value)}
+                                                    className="bg-black/40 border border-white/20 rounded px-3 py-1 text-sm w-full max-w-xs focus:outline-none focus:border-green-400 text-white placeholder-zinc-600"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Interactive Vision HUD */}
+                                <div className="flex-1 w-full relative group">
+                                    <div className="relative aspect-square md:aspect-[4/5] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl bg-zinc-900">
+                                        {/* Background Image simulating vision */}
+                                        <img
+                                            src="https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=1000&auto=format&fit=crop"
+                                            alt="FaruzanAI Vision"
+                                            className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-[1.5s]"
+                                        />
+
+                                        {/* HUD Overlay */}
+                                        <div className="absolute inset-0 p-6 flex flex-col justify-between">
+
+                                            {/* Top Status Bar */}
+                                            <div className="flex justify-between items-start">
+                                                <div className="bg-black/40 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10 text-[10px] font-mono text-green-400 flex items-center gap-2">
+                                                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                                                    LIVE FEED
+                                                </div>
+                                                <div className="bg-black/40 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10 text-[10px] font-mono text-green-400">
+                                                    SYS: ONLINE
+                                                </div>
+                                            </div>
+
+                                            {/* Scanning Reticle Effect */}
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                                                <div className="w-3/4 h-3/4 border border-green-500/30 rounded-3xl relative">
+                                                    <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-green-400"></div>
+                                                    <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-green-400"></div>
+                                                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-green-400"></div>
+                                                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-green-400"></div>
+                                                    <div className="absolute top-1/2 left-0 w-full h-[1px] bg-green-500/20 animate-scan"></div>
+                                                </div>
+                                            </div>
+
+                                            {/* Interaction Area (Bottom) */}
+                                            <div className="space-y-3 z-20">
+                                                {/* Response Bubble */}
+                                                <div className="bg-black/60 backdrop-blur-xl p-5 rounded-2xl border border-white/20 w-full shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300">
+                                                    <div className="flex items-center justify-between mb-2 pb-2 border-b border-white/10">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-green-400 to-blue-500 flex items-center justify-center text-[10px] font-bold text-black">F</div>
+                                                            <p className="text-xs font-bold text-green-400 tracking-wider font-mono">FARUZAN_AI_CORE</p>
+                                                        </div>
+                                                        <div className="text-[10px] text-white/50">{isAiLoading ? "PROCESSING..." : "IDLE"}</div>
+                                                    </div>
+                                                    <div className="min-h-[60px] max-h-[150px] overflow-y-auto scrollbar-hide text-sm text-white/90 leading-relaxed">
+                                                        {isAiLoading ? (
+                                                            <div className="flex items-center gap-2 text-green-300/80 animate-pulse">
+                                                                <Loader className="w-4 h-4 animate-spin" />
+                                                                <span>解析中...</span>
+                                                            </div>
+                                                        ) : (
+                                                            chatResponse
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Input Area */}
+                                                <form onSubmit={handleChatSubmit} className="relative group/input">
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl blur opacity-0 group-hover/input:opacity-100 transition-opacity"></div>
+                                                    <div className="relative flex gap-2">
+                                                        <input
+                                                            type="text"
+                                                            value={chatInput}
+                                                            onChange={(e) => setChatInput(e.target.value)}
+                                                            placeholder="Ask Faruzan anything..."
+                                                            className="flex-1 bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl px-4 py-3 text-sm text-white placeholder-white/40 focus:outline-none focus:bg-white/20 focus:border-green-400/50 transition-all"
+                                                        />
+                                                        <button
+                                                            type="submit"
+                                                            disabled={isAiLoading || !chatInput.trim()}
+                                                            className="bg-white/10 hover:bg-green-500/80 hover:text-black backdrop-blur-lg border border-white/20 rounded-xl px-4 flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed group-hover/input:border-green-400/50 text-white"
+                                                        >
+                                                            {isAiLoading ? <Loader className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Features Grid */}
+                    <section id="features" className="py-24 px-6 bg-[#f5f5f7]">
+                        <div className="max-w-7xl mx-auto space-y-16">
+                            <div className="text-center space-y-4">
+                                <h2 className="text-sm font-bold tracking-widest uppercase text-zinc-400">Other Features</h2>
+                                <h3 className="text-4xl md:text-5xl font-bold text-zinc-900">Impossible Tech.<br />Incredible Design.</h3>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Camera Card */}
+                                <div className="group relative bg-white/40 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] transition-all duration-500 overflow-hidden hover:bg-white/60 float-on-hover">
+                                    <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent pointer-events-none"></div>
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-200/40 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-blue-300/40 transition-colors duration-700"></div>
+                                    <div className="relative z-10">
+                                        <div className="w-14 h-14 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                            <Aperture className="w-7 h-7 text-zinc-800" />
+                                        </div>
+                                        <h4 className="text-2xl font-bold mb-3 tracking-tight">12MP Ultra-Wide</h4>
+                                        <p className="text-zinc-500 leading-relaxed mb-8 font-medium">あなたが見ている世界を、そのまま切り取る。超広角レンズとAI手ブレ補正で、かつてない臨場感を。</p>
+                                        <div className="h-72 rounded-2xl overflow-hidden relative shadow-inner border border-white/50">
+                                            <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000&auto=format&fit=crop" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" alt="Camera sample" />
+                                            <div className="absolute bottom-4 left-4 bg-black/30 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10 text-white text-xs font-medium">4K 60fps</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Audio Card */}
+                                <div className="group relative bg-white/40 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] transition-all duration-500 overflow-hidden hover:bg-white/60 float-on-hover">
+                                    <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent pointer-events-none"></div>
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-pink-200/40 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-pink-300/40 transition-colors duration-700"></div>
+                                    <div className="relative z-10">
+                                        <div className="w-14 h-14 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                            <Music className="w-7 h-7 text-zinc-800" />
+                                        </div>
+                                        <h4 className="text-2xl font-bold mb-3 tracking-tight">Spatial Audio</h4>
+                                        <p className="text-zinc-500 leading-relaxed mb-8 font-medium">耳を塞がないオープンイヤー設計。周囲の音を取り込みながら、あなただけのプライベートな音楽空間を。</p>
+                                        <div className="h-72 bg-gradient-to-b from-zinc-100/50 to-white/50 rounded-2xl overflow-hidden relative flex items-center justify-center border border-white/50 shadow-inner">
+                                            <div className="flex gap-2 items-end h-24">
+                                                {[1, 1.2, 0.8, 1.1, 0.9, 1.3, 0.7, 1.0].map((scale, i) => (
+                                                    <div key={i} className="w-3 bg-zinc-800 rounded-full shadow-lg animate-equalizer origin-bottom" style={{ height: (40 * scale) + 'px', animationDuration: `${0.6 + i * 0.1}s` }}></div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Gallery */}
+                    <section id="gallery" className="py-24 bg-white overflow-hidden relative">
+                        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white to-transparent z-10"></div>
+                        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-white to-transparent z-10"></div>
+
+                        <div className="max-w-7xl mx-auto px-6 mb-12 relative z-20">
+                            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4">Captured on Faru.</h2>
+                            <p className="text-zinc-500 text-lg">あなたの視点を、アートに変える。</p>
+                        </div>
+
+                        <div className="flex flex-col gap-8">
+                            <div className="relative w-full overflow-hidden py-4">
+                                <div className="flex gap-6 animate-marquee whitespace-nowrap w-max hover:[animation-play-state:paused]">
+                                    {[
+                                        "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1000",
+                                        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1000",
+                                        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1000",
+                                        "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1000",
+                                        "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=1000",
+                                        "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1000",
+                                        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1000",
+                                        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1000",
+                                    ].map((src, i) => (
+                                        <div key={i} className="w-[300px] h-[200px] md:w-[400px] md:h-[280px] flex-shrink-0 rounded-2xl overflow-hidden relative group cursor-pointer inline-block shadow-lg hover:shadow-2xl transition-all duration-500">
+                                            <img src={src} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Gallery 1" />
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                                            <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity text-white font-medium text-sm drop-shadow-md bg-black/30 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">Shot on Faru</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="relative w-full overflow-hidden py-4">
+                                <div className="flex gap-6 animate-marquee-reverse whitespace-nowrap w-max hover:[animation-play-state:paused]">
+                                    {[
+                                        "https://images.unsplash.com/photo-1511765224389-37f0e77cf0eb?q=80&w=1000",
+                                        "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=1000",
+                                        "https://images.unsplash.com/photo-1485217988980-11786ced9454?q=80&w=1000",
+                                        "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1000",
+                                        "https://images.unsplash.com/photo-1504198458649-3128b932f49e?q=80&w=1000",
+                                        "https://images.unsplash.com/photo-1511765224389-37f0e77cf0eb?q=80&w=1000",
+                                        "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=1000",
+                                        "https://images.unsplash.com/photo-1485217988980-11786ced9454?q=80&w=1000",
+                                    ].map((src, i) => (
+                                        <div key={i} className="w-[300px] h-[200px] md:w-[400px] md:h-[280px] flex-shrink-0 rounded-2xl overflow-hidden relative group cursor-pointer inline-block shadow-lg hover:shadow-2xl transition-all duration-500">
+                                            <img src={src} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Gallery 2" />
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                                            <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity text-white font-medium text-sm drop-shadow-md bg-black/30 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">Shot on Faru</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Specs */}
+                    <section id="specs" className="py-24 px-6 bg-zinc-900 text-white relative overflow-hidden">
+                        <div className="absolute top-0 left-1/2 w-[800px] h-[800px] bg-white/5 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+
+                        <div className="max-w-4xl mx-auto text-center mb-16 relative z-10">
+                            <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">Technical Specifications</h2>
+                            <p className="text-zinc-400">プロフェッショナルのための、妥協なきスペック。</p>
+                        </div>
+
+                        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                            {[
+                                {
+                                    label: "Snapdragon® AR2 Gen 1",
+                                    description: "最新の4nmプロセスSoCを搭載。AR処理の遅延を極限まで低減し、複雑なAIタスクもサクサク動作。発熱を抑え、長時間でも快適な着け心地を実現します。",
+                                    tag: "Processor",
+                                    icon: <Cpu className="w-6 h-6" />
+                                },
+                                {
+                                    label: "Micro-OLED 4K Display",
+                                    description: "片目4Kの高解像度。現実世界にデジタル情報が溶け込むような、圧倒的な没入感。文字の視認性も高く、映画館のような視聴体験も可能です。",
+                                    tag: "Visual",
+                                    icon: <Maximize className="w-6 h-6" />
+                                },
+                                {
+                                    label: "12MP Ultra-Wide Camera",
+                                    description: "あなたの視界をそのまま記録。AI手ブレ補正により、歩きながらの撮影でも滑らか。3Kビデオで、思い出を鮮明に残せます。",
+                                    tag: "Camera",
+                                    icon: <Aperture className="w-6 h-6" />
+                                },
+                                {
+                                    label: "Open-Ear Spatial Audio",
+                                    description: "耳を塞がないオープンイヤー設計で、周囲の環境音を聞きながら、あなただけのBGMを。空間オーディオ対応で、音に包まれるような感覚。",
+                                    tag: "Audio",
+                                    icon: <Music className="w-6 h-6" />
+                                },
+                                {
+                                    label: "Wi-Fi 7 / Bluetooth 5.3",
+                                    description: "次世代の通信規格に対応。混雑した場所でも途切れにくく、クラウドとの連携もスムーズ。スマホを取り出すことなく、常に接続された状態を。",
+                                    tag: "Connectivity",
+                                    icon: <Wifi className="w-6 h-6" />
+                                },
+                                {
+                                    label: "All-Day Battery Life",
+                                    description: "効率的な電力管理により、最大8時間の連続使用が可能。専用ケースで充電すれば、最長48時間。バッテリー切れの心配から解放されます。",
+                                    tag: "Power",
+                                    icon: <Battery className="w-6 h-6" />
+                                },
+                            ].map((spec, i) => (
+                                <div key={i} className="group relative flex flex-col p-8 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-500 hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_40px_rgba(255,255,255,0.1)] cursor-default overflow-hidden">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+
+                                    <div className="flex items-center justify-between mb-4 relative z-10">
+                                        <div className="p-3 bg-white/10 rounded-2xl text-white group-hover:bg-white group-hover:text-black transition-colors duration-300">
+                                            {spec.icon}
+                                        </div>
+                                        <span className="text-xs font-mono text-zinc-500 uppercase tracking-widest border border-white/10 px-2 py-1 rounded-full">{spec.tag}</span>
+                                    </div>
+
+                                    <div className="relative z-10 space-y-3">
+                                        <h3 className="text-2xl font-bold tracking-tight group-hover:text-white transition-colors duration-300">
+                                            {spec.label}
+                                        </h3>
+                                        <p className="text-zinc-400 text-sm leading-relaxed font-medium group-hover:text-zinc-300 transition-colors duration-300">
+                                            {spec.description}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* Footer */}
+                    <footer className="bg-white border-t border-zinc-200 py-16 px-6 relative overflow-hidden">
+                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 relative z-10">
+                            <a href="#" onClick={scrollToTop} className="font-bold text-4xl tracking-tight text-zinc-900 hover:opacity-80 transition-opacity" style={{ fontFamily: '"Dancing Script", cursive' }}>Faru</a>
+                            <div className="flex gap-6 items-center">
+                                {/* Instagram */}
+                                <a href="#" className="p-2 text-zinc-500 hover:text-pink-600 transition-colors bg-zinc-100 hover:bg-pink-50 rounded-full group" title="Instagram">
+                                    <Instagram className="w-5 h-5" />
+                                </a>
+
+                                {/* X (Official) */}
+                                <a href="https://x.com/Faru_AI" className="flex items-center gap-2 px-4 py-2 text-zinc-500 hover:text-black transition-colors bg-zinc-100 hover:bg-zinc-200 rounded-full group" title="X (Official)">
+                                    <XIcon className="w-4 h-4" />
+                                    <span className="text-xs font-medium">Official</span>
+                                </a>
+
+                                {/* X (Developer) */}
+                                <a href="https://x.com/windowsbeliever" className="flex items-center gap-2 px-4 py-2 text-zinc-500 hover:text-black transition-colors bg-zinc-100 hover:bg-zinc-200 rounded-full group" title="X (Developer)">
+                                    <XIcon className="w-4 h-4" />
+                                    <span className="text-xs font-medium">Dev</span>
+                                </a>
+                            </div>
+                            <p className="text-xs text-zinc-400">© 2025 Faru Inc.</p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
