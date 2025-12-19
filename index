@@ -1,0 +1,479 @@
+import React, { useState, useEffect } from 'react';
+import { Layers, Cpu, Zap, Wifi, ArrowRight, Aperture, Music, Mic, Maximize, Battery } from 'lucide-react';
+
+const SmartGlassLP = () => {
+  const [scrolled, setScrolled] = useState(false);
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
+  
+  // Intersection Observer for scroll animations
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setVisibleSections(prev => new Set(prev).add(entry.target.id));
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('section').forEach(section => observer.observe(section));
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+    };
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-[#f5f5f7] text-zinc-900 font-sans selection:bg-black selection:text-white overflow-x-hidden">
+      
+      {/* Navbar - Apple-like Glassmorphism */}
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-sm py-4' : 'bg-transparent py-6'}`}>
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+          <div className="text-4xl font-bold tracking-tight flex items-center gap-2" style={{ fontFamily: '"Dancing Script", cursive' }}>
+            <div className="w-2 h-2 bg-black rounded-full mb-1"></div>
+            Faru
+          </div>
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-500">
+            <a href="#ai" className="hover:text-black transition-colors">FaruzanAI</a>
+            <a href="#features" className="hover:text-black transition-colors">Features</a>
+            <a href="#gallery" className="hover:text-black transition-colors">Gallery</a>
+            <a href="#specs" className="hover:text-black transition-colors">Specs</a>
+          </div>
+          <button className="bg-black/90 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-black transition-all hover:scale-105 active:scale-95 shadow-lg shadow-black/10 backdrop-blur-sm">
+            Pre-order
+          </button>
+        </div>
+      </nav>
+
+      {/* Hero Section - Product Image */}
+      <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-20">
+        {/* Abstract Background Elements - Glassy Orbs */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-200/30 rounded-full blur-[80px] opacity-60 mix-blend-multiply animate-blob"></div>
+          <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-purple-200/30 rounded-full blur-[80px] opacity-60 mix-blend-multiply animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-32 left-1/3 w-[600px] h-[600px] bg-pink-100/40 rounded-full blur-[100px] opacity-50 mix-blend-multiply animate-blob animation-delay-4000"></div>
+        </div>
+
+        <div className="z-10 w-full max-w-7xl px-6 flex flex-col items-center">
+          
+          {/* Main Product Image Container with Glass Reflection Effect */}
+          <div className="relative w-full max-w-4xl aspect-[16/9] md:aspect-[2/1] flex items-center justify-center mb-8">
+            <div className="w-full h-full relative animate-float-gentle z-10">
+              <img 
+                src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=2000&auto=format&fit=crop" 
+                alt="Faru Smart Glasses" 
+                className="w-full h-full object-contain drop-shadow-2xl filter contrast-110"
+              />
+            </div>
+            {/* Floor Reflection/Shadow */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-2/3 h-4 bg-black/20 blur-xl rounded-full scale-x-75 animate-shadow-pulse"></div>
+          </div>
+
+          <div className="text-center space-y-6 z-20 max-w-3xl mx-auto">
+            <h1 className="text-7xl md:text-9xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-black to-black/60 drop-shadow-sm pb-2" style={{ fontFamily: '"Dancing Script", cursive' }}>
+              Faru
+            </h1>
+            <div className="relative inline-block">
+                <div className="absolute -inset-4 bg-white/30 blur-xl rounded-full"></div>
+                <p className="relative text-zinc-600 text-lg md:text-2xl font-light tracking-wide max-w-lg mx-auto leading-relaxed">
+                見ているもの、その先へ。<br/>
+                最先端の知性が、あなたの視界に溶け込む。
+                </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Intro Lifestyle Image with Glass Overlay */}
+      <section id="intro" className={`py-24 px-6 transition-all duration-1000 ${visibleSections.has('intro') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <div className="max-w-7xl mx-auto">
+          {/* 画像を際立たせるためにボーダーとシャドウを強化 */}
+          <div className="rounded-[2.5rem] overflow-hidden aspect-video relative group shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-4 border-white/20">
+            {/* TODO: アップロードされた画像を使用する場合は、以下のsrcを書き換えてください。
+               例: src="/image_3bc6a4.png" または src="/image_3d1518.png"
+               (画像をプロジェクトのpublicフォルダ等に配置してください)
+            */}
+            <img 
+              src="https://images.unsplash.com/photo-1555529902-526e14aa131e?q=80&w=2940&auto=format&fit=crop" 
+              alt="Lifestyle usage" 
+              className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-1000 scale-100 group-hover:scale-105"
+            />
+            
+            {/* Glass Overlay Card */}
+            <div className="absolute bottom-8 left-8 right-8 md:left-12 md:bottom-12 md:w-auto md:right-auto">
+                <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 md:p-10 rounded-3xl shadow-lg max-w-xl text-white">
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight drop-shadow-md">Everyday, Elevated.</h2>
+                    <p className="text-lg text-white/90 leading-relaxed font-medium drop-shadow-sm">
+                        通勤、仕事、そして冒険。Faruはあなたの生活スタイルにシームレスに統合され、
+                        必要な情報を必要な瞬間にだけ表示します。
+                    </p>
+                </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FaruzanAI Dedicated Section - Dark Glass Aesthetic */}
+      <section id="ai" className="py-24 px-6 bg-[#000000] text-white overflow-hidden relative">
+        {/* Background Gradients */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-green-500/20 to-emerald-900/10 rounded-full blur-[120px] -translate-y-1/3 translate-x-1/3 opacity-60"></div>
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-blue-600/20 to-indigo-900/10 rounded-full blur-[120px] translate-y-1/3 -translate-x-1/3 opacity-60"></div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="flex flex-col md:flex-row items-center gap-12 md:gap-24">
+            
+            {/* Text Content */}
+            <div className="flex-1 space-y-10">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 text-sm font-medium backdrop-blur-md shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                <span className="tracking-wide text-green-100">FaruzanAI Integrated</span>
+              </div>
+              
+              <h2 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1]">
+                Your world,<br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-200 via-emerald-200 to-blue-200 drop-shadow-[0_0_30px_rgba(167,243,208,0.3)]">Intelligently expanded.</span>
+              </h2>
+              
+              <div className="space-y-6 text-xl text-white/70 max-w-lg font-light leading-relaxed">
+                <p>
+                  ただ <span className="font-semibold text-white">"Hey Faruzan"</span> と言うだけ。
+                </p>
+                <p>
+                  あなたの視点から見たものをAIが瞬時に理解。「あれは何？」「この看板を翻訳して」——まるで隣に博識な友人がいるかのように、あなたの好奇心に応えます。
+                </p>
+              </div>
+            </div>
+
+            {/* Visual/Image Content with Glass UI */}
+            <div className="flex-1 w-full relative group">
+              <div className="relative aspect-square md:aspect-[4/5] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl bg-zinc-900">
+                 <img 
+                   src="https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=1000&auto=format&fit=crop" 
+                   alt="FaruzanAI Vision" 
+                   className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-[1.5s]"
+                 />
+                 
+                 {/* AI Overlay UI Mockup - Frosted Glass */}
+                 <div className="absolute inset-0 p-8 flex flex-col justify-between pointer-events-none">
+                    <div className="self-end bg-black/30 backdrop-blur-xl px-4 py-2 rounded-xl border border-white/10 text-xs font-mono shadow-lg text-green-400 flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-ping"></div>
+                      Scanning...
+                    </div>
+                    
+                    <div className="space-y-3">
+                       {/* Glass Message Bubble */}
+                       <div className="bg-white/10 backdrop-blur-2xl p-5 rounded-2xl border border-white/20 max-w-xs transform translate-y-4 opacity-0 animate-[slide-up-fade_1s_ease-out_0.5s_forwards] shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-4 h-4 rounded-full bg-gradient-to-tr from-green-400 to-blue-500"></div>
+                            <p className="text-xs font-bold text-white/90 tracking-wider">FARUZAN AI</p>
+                          </div>
+                          <p className="text-sm text-white/90 leading-relaxed">
+                            これは1950年代のミッドセンチュリー建築です。特徴的なのは大きな窓と、自然と調和した水平方向のデザインです。
+                          </p>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Grid - Glassmorphism Cards with Floating Animation */}
+      <section id="features" className="py-24 px-6 bg-[#f5f5f7]">
+        <div className="max-w-7xl mx-auto space-y-16">
+          <div className="text-center space-y-4">
+            <h2 className="text-sm font-bold tracking-widest uppercase text-zinc-400">Other Features</h2>
+            <h3 className="text-4xl md:text-5xl font-bold text-zinc-900">Impossible Tech.<br/>Incredible Design.</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Card 1 - Camera */}
+            <div className="group relative bg-white/40 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] transition-all duration-500 overflow-hidden hover:bg-white/60 float-on-hover">
+              {/* Glass Highlight/Reflection */}
+              <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent pointer-events-none"></div>
+              
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-200/40 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-blue-300/40 transition-colors duration-700"></div>
+              
+              <div className="relative z-10">
+                <div className="w-14 h-14 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                    <Aperture className="w-7 h-7 text-zinc-800" />
+                </div>
+                <h4 className="text-2xl font-bold mb-3 tracking-tight">12MP Ultra-Wide</h4>
+                <p className="text-zinc-500 leading-relaxed mb-8 font-medium">
+                    あなたが見ている世界を、そのまま切り取る。超広角レンズとAI手ブレ補正で、かつてない臨場感を。
+                </p>
+                <div className="h-72 rounded-2xl overflow-hidden relative shadow-inner border border-white/50">
+                    <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000&auto=format&fit=crop" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" alt="Camera sample" />
+                    {/* Glass Badge on Image */}
+                    <div className="absolute bottom-4 left-4 bg-black/30 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10 text-white text-xs font-medium">
+                        4K 60fps
+                    </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2 - Audio */}
+            <div className="group relative bg-white/40 backdrop-blur-3xl p-8 rounded-[2.5rem] border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.15)] transition-all duration-500 overflow-hidden hover:bg-white/60 float-on-hover">
+               {/* Glass Highlight/Reflection */}
+               <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent pointer-events-none"></div>
+               
+               <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-pink-200/40 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-pink-300/40 transition-colors duration-700"></div>
+              
+              <div className="relative z-10">
+                <div className="w-14 h-14 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                    <Music className="w-7 h-7 text-zinc-800" />
+                </div>
+                <h4 className="text-2xl font-bold mb-3 tracking-tight">Spatial Audio</h4>
+                <p className="text-zinc-500 leading-relaxed mb-8 font-medium">
+                    耳を塞がないオープンイヤー設計。周囲の音を取り込みながら、あなただけのプライベートな音楽空間を。
+                </p>
+                <div className="h-72 bg-gradient-to-b from-zinc-100/50 to-white/50 rounded-2xl overflow-hidden relative flex items-center justify-center border border-white/50 shadow-inner">
+                    <div className="flex gap-2 items-end h-24">
+                        {[1, 1.2, 0.8, 1.1, 0.9, 1.3, 0.7, 1.0].map((scale, i) => (
+                            <div key={i} className="w-3 bg-zinc-800 rounded-full shadow-lg" 
+                                style={{
+                                    height: `${40 * scale}px`,
+                                    animation: `bounce ${0.8 + Math.random() * 0.5}s infinite ease-in-out alternate`
+                                }}>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery - Infinite Marquee Style */}
+      <section id="gallery" className="py-24 bg-white overflow-hidden relative">
+        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white to-transparent z-10"></div>
+        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-white to-transparent z-10"></div>
+        
+        <div className="max-w-7xl mx-auto px-6 mb-12 relative z-20">
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4">Captured on Faru.</h2>
+          <p className="text-zinc-500 text-lg">あなたの視点を、アートに変える。</p>
+        </div>
+        
+        <div className="flex flex-col gap-8">
+          {/* Marquee Row 1 (Left) */}
+          <div className="relative w-full overflow-hidden py-4">
+            <div className="flex gap-6 animate-marquee whitespace-nowrap w-max hover:[animation-play-state:paused]">
+              {[
+                "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1000",
+                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1000",
+                "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1000",
+                "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1000",
+                "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=1000",
+                 // 重複させてループを作る
+                "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1000",
+                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1000",
+                "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1000",
+              ].map((src, i) => (
+                <div key={i} className="w-[300px] h-[200px] md:w-[400px] md:h-[280px] flex-shrink-0 rounded-2xl overflow-hidden relative group cursor-pointer inline-block shadow-lg hover:shadow-2xl transition-all duration-500">
+                  <img src={src} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Gallery 1" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                  <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity text-white font-medium text-sm drop-shadow-md bg-black/30 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+                    Shot on Faru
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Marquee Row 2 (Right) */}
+          <div className="relative w-full overflow-hidden py-4">
+            <div className="flex gap-6 animate-marquee-reverse whitespace-nowrap w-max hover:[animation-play-state:paused]">
+               {[
+                "https://images.unsplash.com/photo-1511765224389-37f0e77cf0eb?q=80&w=1000",
+                "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=1000",
+                "https://images.unsplash.com/photo-1485217988980-11786ced9454?q=80&w=1000",
+                "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1000",
+                "https://images.unsplash.com/photo-1504198458649-3128b932f49e?q=80&w=1000",
+                // 重複
+                "https://images.unsplash.com/photo-1511765224389-37f0e77cf0eb?q=80&w=1000",
+                "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=1000",
+                "https://images.unsplash.com/photo-1485217988980-11786ced9454?q=80&w=1000",
+              ].map((src, i) => (
+                <div key={i} className="w-[300px] h-[200px] md:w-[400px] md:h-[280px] flex-shrink-0 rounded-2xl overflow-hidden relative group cursor-pointer inline-block shadow-lg hover:shadow-2xl transition-all duration-500">
+                   <img src={src} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Gallery 2" />
+                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                   <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity text-white font-medium text-sm drop-shadow-md bg-black/30 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+                    Shot on Faru
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Specs List with Glass Interaction */}
+      <section id="specs" className="py-24 px-6 bg-zinc-900 text-white relative overflow-hidden">
+        {/* Subtle Background Glows */}
+        <div className="absolute top-0 left-1/2 w-[800px] h-[800px] bg-white/5 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+
+        <div className="max-w-4xl mx-auto text-center mb-16 relative z-10">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">Technical Specifications</h2>
+          <p className="text-zinc-400">プロフェッショナルのための、妥協なきスペック。</p>
+        </div>
+
+        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 relative z-10">
+           {[
+             { label: "Processor", value: "Snapdragon® AR2 Gen 1", icon: <Cpu /> },
+             { label: "Display", value: "Micro-OLED 4K per eye", icon: <Maximize /> },
+             { label: "Camera", value: "12MP Ultra-Wide / 3K Video", icon: <Aperture /> },
+             { label: "Audio", value: "Open-Ear Spatial Audio", icon: <Music /> },
+             { label: "Connectivity", value: "Wi-Fi 7 / Bluetooth 5.3", icon: <Wifi /> },
+             { label: "Battery", value: "Up to 8 hours (48h with Case)", icon: <Battery /> },
+           ].map((spec, i) => (
+             <div 
+                key={i} 
+                className="group relative flex items-start gap-4 p-6 rounded-2xl border border-white/5 bg-white/5 backdrop-blur-sm transition-all duration-500 hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_40px_rgba(255,255,255,0.1)] cursor-default overflow-hidden"
+             >
+               {/* Shine Effect */}
+               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 pointer-events-none"></div>
+
+               <div className="text-zinc-400 mt-1 transition-colors duration-300 group-hover:text-white relative z-10">
+                 {spec.icon}
+               </div>
+               <div className="relative z-10">
+                 <div className="text-sm text-zinc-500 uppercase tracking-wider mb-1 transition-colors duration-300 group-hover:text-zinc-300" style={{ fontFamily: '"VT323", monospace' }}>
+                    {spec.label}
+                 </div>
+                 <div className="text-xl font-medium tracking-wide group-hover:text-white transition-colors duration-300">
+                    {spec.value}
+                 </div>
+               </div>
+               
+               {/* Decorative Dots - Inverted for Dark Theme */}
+               <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex gap-1">
+                  <div className="w-1 h-1 bg-white/50 rounded-full"></div>
+                  <div className="w-1 h-1 bg-white/50 rounded-full"></div>
+                  <div className="w-1 h-1 bg-white/50 rounded-full"></div>
+               </div>
+             </div>
+           ))}
+        </div>
+      </section>
+
+      {/* Footer - Minimalist Glass */}
+      <footer className="bg-white border-t border-zinc-200 py-16 px-6 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 relative z-10">
+          <div className="font-bold text-4xl tracking-tight text-zinc-900" style={{ fontFamily: '"Dancing Script", cursive' }}>Faru</div>
+          <div className="flex gap-8 text-sm font-medium text-zinc-500">
+            <a href="#" className="hover:text-black transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-black transition-colors">Terms of Service</a>
+            <a href="#" className="hover:text-black transition-colors">Support</a>
+          </div>
+          <p className="text-xs text-zinc-400">© 2025 Faru Inc.</p>
+        </div>
+      </footer>
+
+      <style>{`
+        /* フォントのインポート（必ず先頭に記述する必要があります） */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
+
+        html {
+          scroll-behavior: smooth;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .dark-glass {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes draw-line {
+          0% { stroke-dashoffset: 1000; }
+          100% { stroke-dashoffset: 0; }
+        }
+        @keyframes float-rotate {
+          0% { transform: rotateY(-10deg) translateY(0px); }
+          50% { transform: rotateY(10deg) translateY(-20px); }
+          100% { transform: rotateY(-10deg) translateY(0px); }
+        }
+        @keyframes float-gentle {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-15px); }
+          100% { transform: translateY(0px); }
+        }
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes marquee-reverse {
+          0% { transform: translateX(-50%); }
+          100% { transform: translateX(0); }
+        }
+        @keyframes slide-up-fade {
+          0% { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes blob {
+          0% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+          100% { transform: translate(0px, 0px) scale(1); }
+        }
+        @keyframes shadow-pulse {
+            0% { opacity: 0.2; transform: translateX(-50%) scaleX(0.75); }
+            50% { opacity: 0.1; transform: translateX(-50%) scaleX(0.65); }
+            100% { opacity: 0.2; transform: translateX(-50%) scaleX(0.75); }
+        }
+        .animate-draw-line {
+          stroke-dasharray: 1000;
+          animation: draw-line 3s ease-out forwards;
+        }
+        .animate-float-rotate {
+          animation: float-rotate 8s ease-in-out infinite;
+        }
+        .animate-float-gentle {
+          animation: float-gentle 6s ease-in-out infinite;
+        }
+        .animate-marquee {
+          animation: marquee 40s linear infinite;
+        }
+        .animate-marquee-reverse {
+          animation: marquee-reverse 40s linear infinite;
+        }
+        .float-on-hover:hover {
+            animation: float-gentle 6s ease-in-out infinite;
+        }
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+            animation-delay: 4s;
+        }
+        .animate-shadow-pulse {
+            animation: shadow-pulse 6s ease-in-out infinite;
+        }
+        .perspective-1000 {
+          perspective: 1000px;
+        }
+        .preserve-3d {
+          transform-style: preserve-3d;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default SmartGlassLP;
